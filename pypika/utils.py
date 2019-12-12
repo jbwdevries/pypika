@@ -1,5 +1,9 @@
 # coding: utf-8
 
+from typing import Any, Optional, Type, TypeVar
+
+T = TypeVar('T')
+
 __author__ = "Timothy Heys"
 __email__ = "theys@kayak.com"
 
@@ -35,7 +39,7 @@ class FunctionException(Exception):
     pass
 
 
-def builder(func):
+def builder(func: T) -> T:
     """
     Decorator for wrapper "builder" functions.  These are functions on the Query class or other classes used for
     building queries which mutate the query and return self.  To make the build functions immutable, this decorator is
@@ -58,7 +62,7 @@ def builder(func):
     return _copy
 
 
-def ignore_copy(func):
+def ignore_copy(func: T) -> T:
     """
     Decorator for wrapping the __getattr__ function for classes that are copied via deepcopy.  This prevents infinite
     recursion caused by deepcopy looking for magic functions in the class. Any class implementing __getattr__ that is
@@ -77,7 +81,7 @@ def ignore_copy(func):
     return _getattr
 
 
-def resolve_is_aggregate(values):
+def resolve_is_aggregate(values: Any) -> Optional[bool]:
     """
     Resolves the is_aggregate flag for an expression that contains multiple terms.  This works like a voter system,
     each term votes True or False or abstains with None.
@@ -93,20 +97,12 @@ def resolve_is_aggregate(values):
         return all(result)
     return None
 
-
-def format_quotes(value, quote_char):
+def format_quotes(value: Any, quote_char: Optional[str]) -> str:
     return '{quote}{value}{quote}' \
         .format(value=value, quote=quote_char or '')
 
 
-def format_alias_sql(sql, alias, quote_char=None, alias_quote_char=None, **kwargs):
+def format_alias_sql(sql: str, alias: Optional[str], quote_char: Optional[str] = None, alias_quote_char: Optional[str] = None, **kwargs: Any) -> str:
     if alias is None:
         return sql
     return '{sql} {alias}'.format(sql=sql, alias=format_quotes(alias, alias_quote_char or quote_char))
-
-
-def validate(*args, exc=None, type=None):
-    if type is not None:
-        for arg in args:
-            if not isinstance(arg, type):
-                raise exc
